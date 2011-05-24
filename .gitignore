@@ -5,3 +5,4 @@ tmp/
 .buildpath
 .DS_Store
 .project
+*.log

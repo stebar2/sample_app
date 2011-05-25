@@ -1,6 +1,7 @@
 source 'http://rubygems.org'
 
 gem 'rails', '3.0.7'
+gem 'rake', '0.8.7'
 gem 'sqlite3-ruby', '1.3.2', :require => 'sqlite3'
 
 # Bundle gems for the local environment. Make sure to
@@ -13,6 +14,7 @@ group :development do
 	gem 'autotest-rails-pure', '4.1.2'
 	gem 'autotest-fsevent', '0.2.4'
 	gem 'autotest-growl', '0.2.9'
+	gem 'annotate-models', '1.0.4'
 end
 
 group :test do

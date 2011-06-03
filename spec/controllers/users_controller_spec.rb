@@ -19,9 +19,6 @@ describe UsersController do
         third = Factory(:user, :name => 'Ben', :email => 'another@example.net')
         
         @users = [@user, second, third]
-        30.times do
-          @users << Factory(:user, :email => Factory.next(:email))
-        end
       end
       
       it 'should be successful' do
@@ -42,6 +39,9 @@ describe UsersController do
       end
       
       it 'should paginate users' do
+        30.times do
+          @users << Factory(:user, :email => Factory.next(:email))
+        end
         get :index
         response.should have_selector('div.pagination')
         response.should have_selector('span.disabled', :content => 'Previous')
@@ -111,6 +111,26 @@ describe UsersController do
       get :show, :id => @user
       response.should have_selector('span.content', :content => mp1.content)
       response.should have_selector('span.content', :content => mp2.content)
+    end
+    
+    describe 'for signed-in users' do
+
+      before(:each) do
+        @another_user = Factory(:user, :email => Factory.next(:email))
+        @mp1 = Factory(:micropost, :user => @user)
+        @mp2 = Factory(:micropost, :user => @another_user)
+        test_sign_in(@user)
+      end
+      
+      it "should display 'delete' links for this user's microposts" do
+        get :show, :id => @user
+        response.should have_selector('td a', :content => 'delete')
+      end
+      
+      it "should not display 'delete' links for other users' microposts" do
+        get :show, :id => @another_user
+        response.should_not have_selector('td a', :content => 'delete')
+      end
     end
   end
 

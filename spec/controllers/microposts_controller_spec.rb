@@ -93,4 +93,43 @@ describe MicropostsController do
       end
     end
   end
+
+  describe "GET 'index'" do
+    before(:each) do
+      @user = Factory(:user)
+      @wrong_user = Factory(:user, :email => Factory.next(:email))
+      
+      @mps = [ ]
+      31.times do
+        @mps << Factory(:micropost, :user => @user)
+      end
+      @wrong_mp = Factory(:micropost, :user => @wrong_user)
+      
+      test_sign_in(@user)
+    end
+    
+    it 'should render index template' do
+      get :index, :user_id => @user
+      response.should render_template('index')
+    end
+    
+    it 'should find user with params[:user_id]' do
+      get :index, :user_id => @user
+      assigns(:user).should == @user
+    end
+    
+    it "should get user's microposts" do
+      get :index, :user_id => @user
+      assigns(:microposts).should_not be_nil
+      assigns(:microposts).should_not include(@wrong_mp)
+    end
+    
+    it 'should paginate microposts' do        
+      get :index, :user_id => @user
+      response.should have_selector('div.pagination')
+      response.should have_selector('span.disabled', :content => 'Previous')
+      response.should have_selector('a', :href => '/users/1/microposts?page=2', :content => '2')
+      response.should have_selector('a', :href => '/users/1/microposts?page=2', :content => 'Next')
+    end
+  end
 end

@@ -47,32 +47,38 @@ describe PagesController do
   end
   
   describe "GET 'home'" do
-    it "should be successful" do
-      get 'home'
-      response.should be_success
+    describe 'when not signed in' do
+    
+      before(:each) do
+        get :home
+      end
+      
+      it "should be successful" do
+        response.should be_success
+      end
+      
+      it "should have the right title" do
+        response.should have_selector("title",
+                                      :content => "#{@base_title} | Home")
+      end
     end
     
-    it "should have the right title" do
-      get 'home'
-      response.should have_selector("title",
-                                    :content =>  @base_title + " | Home")
-    end
-    
-    describe 'for signed-in users' do
+    describe 'when signed in' do
       
       before(:each) do
-        @user = Factory(:user)
-        test_sign_in(@user)
+        @user = test_sign_in(Factory(:user))
+        other_user = Factory(:user, :email => Factory.next(:email))
+        other_user.follow!(@user)
       end
       
       it "should display plural '0 microposts' in sidebar" do
-        get 'home'
+        get :home
         response.should have_selector('span.microposts', :content => '0 microposts')
       end
       
       it "should display singular '1 micropost' in sidebar" do
         mps = [ Factory(:micropost, :user => @user) ]
-        get 'home'
+        get :home
         response.should have_selector('span.microposts', :content => '1 micropost')
         response.should_not have_selector('span.microposts', :content => '1 microposts')
       end
@@ -83,11 +89,19 @@ describe PagesController do
           mps << Factory(:micropost, :user => @user)
         end
         
-        get 'home'
+        get :home
         response.should have_selector('div.pagination')
         response.should have_selector('span.disabled', :content => 'Previous')
         response.should have_selector('a', :href => '/?page=2', :content => '2')
         response.should have_selector('a', :href => '/?page=2', :content => 'Next')
+      end
+      
+      it 'should have the right follower/following counts' do
+        get :home
+        response.should have_selector('a', :href => following_user_path(@user),
+                                           :content => '0 following')
+        response.should have_selector('a', :href => followers_user_path(@user),
+                                           :content => '1 follower')
       end
     end
   end
